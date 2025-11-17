@@ -1,0 +1,47 @@
+[33mcommit 48cee812fb66cb2d972e10169b337e85d90933ae[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Mon Nov 17 22:16:57 2025 +0400
+
+    feat: Managed-docker-with-terra
+
+[33mcommit a3811cc223607aae876873c131458a769e2dbdc5[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Mon Nov 17 18:50:18 2025 +0400
+
+    feat: Ansible-docker
+
+[33mcommit d46052b78e6cdde5b83cb5b06b1235dc73614dc9[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Mon Nov 17 17:31:55 2025 +0400
+
+    feat: Nginx role Impementation
+
+[33mcommit e27e6e91690eaed5ce1a11f2c07cd90dcfc6c027[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Mon Nov 17 16:59:39 2025 +0400
+
+    feat: Implemented Idempotent Ansible PLaybook
+
+[33mcommit 97f9e3246146a7764f6ae234b7e2ee42ec00450a[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Sun Nov 16 13:04:43 2025 +0400
+
+    chore: Finalized Terraform destroy and updated gitignore
+
+[33mcommit 9277de01b275bc3f988e3bcbc5290eaf5d3c7144[m[33m ([m[1;32mfeature/python-script[m[33m)[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Sun Nov 16 01:56:04 2025 +0400
+
+    feat: stall terraform
+
+[33mcommit 10ec101371fba77e7f2c8eedefb5957139ba0db4[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Sun Nov 16 00:47:08 2025 +0400
+
+    feat: Add empty Dockerfile
+
+[33mcommit 3e71026654b98cef0ed97dbf27aa2e39c293e222[m
+Author: DevOps Learner <devops.learner@mylocal.com>
+Date:   Sun Nov 16 00:32:03 2025 +0400
+
+    feat: Add REaDme and git ignore to hiStory
