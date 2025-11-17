@@ -37,7 +37,7 @@ jobs:
         run: pip install ansible
 
       - name: Check Ansible Playbook Syntax
-        run: ansible-playbook ansible-cm/docker_deployment.yml --syntax-check -i ansible-cm/hosts
+        run: ansible-playbook ansible-cm/docker_deployment.yml --syntax-check -i ansible-cm/inventory.ini
 
       # ----------------------------------------------------
       # ეტაპი 3: Terraform (Plan - CI)
@@ -47,10 +47,10 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: devops-lab/terraform-iac
+        working-directory: terraform-iac
 
       - name: Terraform Plan
         run: terraform plan -input=false
-        working-directory: devops-lab/terraform-iac
+        working-directory: terraform-iac
         if: always()  
         # ეს ეტაპი ამოწმებს, თუ რა შეიცვლება, მაგრამ არ ატარებს apply-ს CI-ს ფარგლებში
