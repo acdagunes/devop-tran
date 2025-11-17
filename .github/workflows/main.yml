@@ -37,14 +37,15 @@ jobs:
         run: pip install ansible
 
       - name: Check Ansible Playbook Syntax
-        run: ansible-playbook ansible-cm/docker_deployment.yml --syntax-check -i ansible-cm/inventory.ini
+        run: ansible-playbook ansible-cm/docker-deployment.yml --syntax-check -i ansible-cm/inventory.ini
 
       # ----------------------------------------------------
       # ეტაპი 3: Terraform (Plan - CI)
       # ----------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
+      - name: Add Terraform to PATH (Fix)
+        run: echo "$HOME/.terraform.d/bin" >> $GITHUB_PATH
       - name: Terraform Init
         run: terraform init
         working-directory: terraform-iac
