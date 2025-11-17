@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main # გაეშვება, როდესაც კოდი აიტვირთება main ტოტზე
+  pull_request:
+    branches:
+      - main    
 
 jobs:
   build-and-deploy:
