@@ -4,25 +4,29 @@ on:
   push:
     branches:
       - main # გაეშვება, როდესაც კოდი აიტვირთება main ტოტზე
+  pull_request:
+    branches:
+      - main    
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest # ვიყენებთ GitHub-ის ვირტუალურ სერვერს
-    services:
-      docker:
-        image: docker:dind
-        options: --privileged
+
+    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4 # კოდის გადმოწერა
-     
+      - name: Check Current Path
+        run: pwd
+      - name: List Files
+        run: ls -R 
       # ----------------------------------------------------
       # ეტაპი 1: Docker (Build & Check - CI)
       # ----------------------------------------------------
       - name: Build Docker Image
         run: docker build -t simple-nginx-image . # ვაშენებთ ლოკალურ იმიჯს
-        working-directory: ./
-
+        
       - name: Check Docker Image
         run: docker image ls | grep simple-nginx-image
       - name: Check Current Path
@@ -36,19 +40,21 @@ jobs:
         run: pip install ansible
 
       - name: Check Ansible Playbook Syntax
-        run: ansible-playbook ansible-cm/docker_deployment.yml --syntax-check -i ansible-cm/hosts
+        run: ansible-playbook ansible-cm/docker-deployment.yml --syntax-check -i ansible-cm/inventory.ini
 
       # ----------------------------------------------------
       # ეტაპი 3: Terraform (Plan - CI)
       # ----------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-
+      - name: Add Terraform to PATH (Fix)
+        run: echo "$HOME/.terraform.d/bin" >> $GITHUB_PATH
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform-iac
+        working-directory: terraform-iac
 
       - name: Terraform Plan
         run: terraform plan -input=false
-        working-directory: ./terraform-iac
+        working-directory: terraform-iac
+        if: always()  
         # ეს ეტაპი ამოწმებს, თუ რა შეიცვლება, მაგრამ არ ატარებს apply-ს CI-ს ფარგლებში
