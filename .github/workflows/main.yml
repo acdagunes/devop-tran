@@ -47,10 +47,10 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: devop-tran/terraform-iac
+        working-directory: devops-lab/terraform-iac
 
       - name: Terraform Plan
         run: terraform plan -input=false
-        working-directory: devop-tran/terraform-iac
+        working-directory: devops-lab/terraform-iac
         if: always()  
         # ეს ეტაპი ამოწმებს, თუ რა შეიცვლება, მაგრამ არ ატარებს apply-ს CI-ს ფარგლებში
