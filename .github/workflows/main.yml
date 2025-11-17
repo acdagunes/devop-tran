@@ -17,7 +17,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4 # კოდის გადმოწერა
-     
+      - name: Check Current Path
+        run: pwd
+      - name: List Files
+        run: ls -R 
       # ----------------------------------------------------
       # ეტაპი 1: Docker (Build & Check - CI)
       # ----------------------------------------------------
