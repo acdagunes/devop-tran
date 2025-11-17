@@ -1,0 +1,67 @@
+---
+- name: Setup Docker and launch Nginx container
+  hosts: localhost
+  gather_facts: yes
+  # ინსტალაციისთვის გვჭირდება root პრივილეგიები
+
+  tasks:
+    - name: Ensure Docker dependencies are installed (yum-utils, device-mapper-persistent-data, lvm2)
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      become: yes
+
+    - name: Add Docker GPG key
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://download.docker.com/linux/centos/gpg
+        
+    - name: Add Docker repository (for Rocky/CentOS)
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: '0644'
+
+    - name: Install Python pip
+      ansible.builtin.dnf:
+        name: python3-pip
+        state: present
+      become: yes    
+
+    - name: Install Python Docker SDK (required for docker_container module)
+      ansible.builtin.pip:
+        name: docker
+        state: present
+      become: yes 
+        
+    - name: Install Docker Engine
+      ansible.builtin.dnf:
+        name: docker-ce
+        state: present
+      become: yes 
+        
+    - name: Start Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+   
+    - name: Add current user to 'docker' group
+      ansible.builtin.user:
+        name: "{{ lookup('env', 'USER') }}" # თქვენი Shell-ის მომხმარებლის სახელი
+        groups: docker
+        append: yes  
+
+
+    - name: Launch Nginx container on port 8080
+      community.docker.docker_container:
+        name: my_nginx_web
+        image: nginx:latest
+        state: started
+        ports:
+          - "8080:80" # ჰოსტის პორტი 8080 უკავშირდება კონტეინერის პორტს 80
+        restart_policy: always
