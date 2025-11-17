@@ -18,7 +18,7 @@ jobs:
       # ----------------------------------------------------
       - name: Build Docker Image
         run: docker build -t simple-nginx-image . # ვაშენებთ ლოკალურ იმიჯს
-        working-directory: ./
+        working-directory: ./devops-lab
 
       - name: Check Docker Image
         run: docker image ls | grep simple-nginx-image
@@ -45,4 +45,5 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false
         working-directory: ./terraform-iac
+        if: always()  
         # ეს ეტაპი ამოწმებს, თუ რა შეიცვლება, მაგრამ არ ატარებს apply-ს CI-ს ფარგლებში
