@@ -29,6 +29,13 @@ jobs:
         
       - name: Check Docker Image
         run: docker image ls | grep simple-nginx-image
+      - name: Run Docker Container
+        # ვუშვებთ კონტეინერს Runner-ზე (პორტი 8080-ზე)
+        run: docker run -d -p 8080:80 --name nginx-test simple-nginx-image
+        
+      - name: Verify Deployment (Health Check)
+        # ვამოწმებთ, მუშაობს თუ არა კონტეინერი ლოკალურად
+        run: curl http://localhost:8080
       - name: Check Current Path
         run: pwd
       - name: List Files
