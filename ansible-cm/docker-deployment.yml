@@ -51,12 +51,12 @@
     # --------------------------------------------------------------------------
     # ეტაპი 3ბ: Docker-ის რეპოზიტორიის დამატება (apt_repository მოდულით)
     # --------------------------------------------------------------------------
-   - name: Add Docker repository using apt_repository (Fixed for Noble/Jammy)
-     ansible.builtin.apt_repository:
-       repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" # <-- შეცვლილია 'jammy'-ზე
-       state: present
-       update_cache: no 
-     tags: install_docker
+    - name: Add Docker repository using apt_repository (Fixed for Noble/Jammy)
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" # <-- შეცვლილია 'jammy'-ზე
+        state: present
+        update_cache: no 
+      tags: install_docker
     # --------------------------------------------------------------------------
     # ამოცანა 4: იძულებითი APT განახლება (კონფლიქტის მოსაგვარებლად)
     # --------------------------------------------------------------------------
