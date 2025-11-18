@@ -17,7 +17,7 @@
       tags: cleanup
 
     - name: Ensure APT cache is reset after cleanup
-      ansible.builtin.shell: rm -f /var/lib/apt/lists/* && apt clean
+      ansible.builtin.shell: rm -rf /var/lib/apt/lists/* && apt clean
       tags: cleanup
 
   tasks:
