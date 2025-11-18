@@ -39,70 +39,44 @@
           - python3-pip
         state: present
       tags: install_deps
-    # --------------------------------------------------------------------------
-    # ეტაპი 3ა: GPG გასაღების იმპორტი (Shell-ით)
-    # --------------------------------------------------------------------------
-    - name: Import Docker GPG key
-      ansible.builtin.shell: |
-        install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-      tags: install_docker
-
-    # --------------------------------------------------------------------------
-    # ეტაპი 3ბ: Docker-ის რეპოზიტორიის დამატება (apt_repository მოდულით)
-    # --------------------------------------------------------------------------
-    - name: Add Docker repository using apt_repository (Fixed for Noble/Jammy)
-      ansible.builtin.apt_repository:
-        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" # <-- შეცვლილია 'jammy'-ზე
-        state: present
-        update_cache: no 
-      tags: install_docker
-    # --------------------------------------------------------------------------
-    # ამოცანა 4: იძულებითი APT განახლება (კონფლიქტის მოსაგვარებლად)
-    # --------------------------------------------------------------------------
+   
     
 
-    # ამოცანა 5: დამატებითი დასუფთავება, რომ სხვაგან არ იყოს ძველი ჩანაწერი
-    - name: Clean up remaining ASC key manually (just in case)
-      ansible.builtin.file:
-        path: /etc/apt/keyrings/docker.asc
-        state: absent
+
+    - name: Install Docker Engine using official get-docker.sh script
+      ansible.builtin.shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
       tags: install_docker
-   # --------------------------------------------------------------------------
-    # ეტაპი 5ა: Python SDK-ის ინსტალაცია
+
     # --------------------------------------------------------------------------
-    - name: Install Python Docker SDK
-      ansible.builtin.apt:
-        name: python3-docker
+    # ეტაპი 4: Python Docker SDK-ის ინსტალაცია (pip-ით)
+    # --------------------------------------------------------------------------
+    - name: Install Python Docker SDK using pip (due to apt conflicts)
+      ansible.builtin.pip:
+        name: docker
         state: present
       tags: install_deps
-    - name: Force APT cache update after adding Docker repository
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 300
-      tags: install_docker
-    - name: Install Docker Engine (Force update to find package)
-      ansible.builtin.apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-        state: present
-        update_cache: yes # <--- APT მოდული იძულებით განაახლებს ქეშს
-        cache_valid_time: 300 # <--- ვადის ამოწურვა 5 წუთში
-      tags: install_docker   
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 5: Docker-ის სერვისის დაწყება (სკრიპტმა უნდა დააინსტალიროს იგი)
+    # --------------------------------------------------------------------------
     - name: Start Docker service
       ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
       tags: deploy
-    - name: Launch Nginx container on port 8080
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 6: Nginx-ის გაშვება
+    # --------------------------------------------------------------------------
+    - name: Launch Nginx container on port 8082
       community.docker.docker_container:
         name: my_nginx_web
         image: nginx:latest
         state: started
         ports:
-          - "80:8082" # შევცვალოთ 8080-ით 80-ზე, რათა გამოვიყენოთ სტანდარტული HTTP პორტი
+          - "8082:80"
         restart_policy: always
       tags: deploy
