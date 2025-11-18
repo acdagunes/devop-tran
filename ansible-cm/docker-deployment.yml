@@ -54,6 +54,12 @@
         update_cache: yes
       tags: install_docker
 
+    - name: Force APT Update after adding Docker repo
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600 # განაახლებს ქეშს თუ 1 საათზე მეტი გავიდა
+      tags: install_docker
+   
     # --------------------------------------------------------------------------
     # ეტაპი 5: Docker-ის ინსტალაცია
     # --------------------------------------------------------------------------
