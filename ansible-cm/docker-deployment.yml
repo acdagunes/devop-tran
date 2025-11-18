@@ -15,7 +15,6 @@
         - /etc/apt/sources.list.d/docker.list.save # <-- დაამატეთ ეს
         - /etc/apt/sources.list.d/docker.list.d    # <-- დაამატეთ ეს
       tags: cleanup
-
     - name: Ensure APT cache is reset after cleanup
       ansible.builtin.shell: rm -rf /var/lib/apt/lists/* && apt clean
       tags: cleanup
@@ -24,13 +23,13 @@
     # --------------------------------------------------------------------------
     # ეტაპი 1: Ubuntu-ს წინაპირობების ინსტალაცია
     # --------------------------------------------------------------------------
-    - name: Force apt update using shell (for troubleshooting cache failure)
+    # ამოცანა 1: იძულებით განახლება (APT-სთვის ინტერნეტი სჭირდება)
+    - name: Force apt update using shell (for base cache refresh)
       ansible.builtin.shell: apt update -y
       tags: install_deps
-
     - name: Install dependencies (curl, gnupg, etc.)
       ansible.builtin.apt:
-        name: 
+        name:
           - curl
           - gnupg
           - lsb-release
@@ -38,20 +37,11 @@
           - python3-pip
         state: present
       tags: install_deps
-      
-    # --------------------------------------------------------------------------
-    # ეტაპი 2: Python Docker SDK-ის ინსტალაცია (Droplet-ზე)
-    # --------------------------------------------------------------------------
     - name: Install Python Docker SDK (using apt to avoid externally-managed error)
       ansible.builtin.apt:
-        # Ubuntu-ში python3-docker მოდული უზრუნველყოფს Docker SDK-ს
         name: python3-docker
         state: present
       tags: install_deps
-
-  # --------------------------------------------------------------------------
-# 1. Shell ამოცანა: ამატებს GPG-ს და რეპოს ერთად (ცვლის ძველ ამოცანებს 1 და 2)
-# --------------------------------------------------------------------------
     - name: Set up Docker's official GPG key and repository
       ansible.builtin.shell: |
         install -m 0755 -d /etc/apt/keyrings
@@ -60,46 +50,25 @@
         echo \
           "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
           {{ ansible_distribution_release }} stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      tags: install_docker
-
-# --------------------------------------------------------------------------
-# 2. APT Update ამოცანა (ძალიან მნიშვნელოვანია!):
-# --------------------------------------------------------------------------
+      tags: install_docker 
     - name: Force APT Update after setting up repo
       ansible.builtin.apt:
         update_cache: yes
       tags: install_docker
-    
-   
-    # --------------------------------------------------------------------------
-    # ეტაპი 5: Docker-ის ინსტალაცია
-    # --------------------------------------------------------------------------
     - name: Install Docker Engine
       ansible.builtin.package:
-        name: 
+        name:
           - docker-ce
           - docker-ce-cli
-          - containerd.io # ასოების სწორი თანმიმდევრობა
+          - containerd.io
         state: present
-      tags: install_docker
-    
-    # --------------------------------------------------------------------------
-    # ეტაპი 6: Docker სერვისის გაშვება და მომხმარებლის დამატება
-    # --------------------------------------------------------------------------
+      tags: install_docker 
     - name: Start Docker service
       ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
       tags: deploy
-      
-    # NOTE: ჩვენ ვუშვებთ Ansible-ს root-ით (-u root), ამიტომ ჯგუფში დამატება არ გვჭირდება,
-    # მაგრამ თუ გვინდა ჩვეულებრივი მომხმარებლისთვის, საჭიროა. ამ ეტაპზე გამოვტოვოთ
-    # გამარტივების მიზნით, რადგან root-ი ყველაფერს აკეთებს.
-
-    # --------------------------------------------------------------------------
-    # ეტაპი 7: Docker Container-ის გაშვება
-    # --------------------------------------------------------------------------
     - name: Launch Nginx container on port 8080
       community.docker.docker_container:
         name: my_nginx_web
