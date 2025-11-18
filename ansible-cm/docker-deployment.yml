@@ -35,12 +35,6 @@
           - python3-pip
         state: present
       tags: install_deps
-    - name: Install Python Docker SDK (using apt to avoid externally-managed error)
-      ansible.builtin.apt:
-        name: python3-docker
-        state: present
-        update_cache: yes # <--- დაამატეთ ეს ოფცია აქ!
-      tags: install_deps
     - name: Set up Docker's official GPG key and repository
       ansible.builtin.shell: |
         install -m 0755 -d /etc/apt/keyrings
@@ -49,7 +43,14 @@
         echo \
           "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
           {{ ansible_distribution_release }} stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      tags: install_docker 
+      tags: install_docker   
+    - name: Install Python Docker SDK (using apt to avoid externally-managed error)
+      ansible.builtin.apt:
+        name: python3-docker
+        state: present
+        update_cache: yes # <--- დაამატეთ ეს ოფცია აქ!
+      tags: install_deps
+    
     - name: Force APT Update after setting up repo
       ansible.builtin.apt:
         update_cache: yes
