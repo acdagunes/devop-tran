@@ -55,14 +55,12 @@
       ansible.builtin.apt_repository:
         repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
-        update_cache: yes # ეს ავტომატურად გაასუფთავებს კონფლიქტებს
+        update_cache: no # ეს ავტომატურად გაასუფთავებს კონფლიქტებს
       tags: install_docker
     # --------------------------------------------------------------------------
     # ამოცანა 4: იძულებითი APT განახლება (კონფლიქტის მოსაგვარებლად)
     # --------------------------------------------------------------------------
-    - name: Force apt update and ignore key/source conflicts
-      ansible.builtin.shell: apt update --allow-insecure-repositories --allow-unauthenticated -y
-      tags: install_docker
+    
 
     # ამოცანა 5: დამატებითი დასუფთავება, რომ სხვაგან არ იყოს ძველი ჩანაწერი
     - name: Clean up remaining ASC key manually (just in case)
