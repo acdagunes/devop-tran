@@ -3,17 +3,22 @@
   hosts: web_servers
   become: yes
   gather_facts: yes
-  pre_tasks: # <-- დაამატეთ ეს ბლოკი
+  pre_tasks:
     - name: Clean up old Docker repository files and keys
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
-        - /etc/apt/sources.list.d/docker.list # წაშლის რეპოზიტორიის ძველ ჩანაწერს
-        - /etc/apt/keyrings/docker.asc       # წაშლის ძველ გასაღებს
-        - /etc/apt/keyrings/docker.gpg       # წაშლის ახალ გასაღებსაც (სუფთა სტარტისთვის)
+        - /etc/apt/sources.list.d/docker.list 
+        - /etc/apt/keyrings/docker.asc      
+        - /etc/apt/keyrings/docker.gpg      
+        - /etc/apt/sources.list.d/docker.list.save # <-- დაამატეთ ეს
+        - /etc/apt/sources.list.d/docker.list.d    # <-- დაამატეთ ეს
       tags: cleanup
-  
+
+    - name: Ensure APT cache is reset after cleanup
+      ansible.builtin.shell: rm -f /var/lib/apt/lists/* && apt clean
+      tags: cleanup
 
   tasks:
     # --------------------------------------------------------------------------
