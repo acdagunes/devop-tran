@@ -39,15 +39,24 @@
           - python3-pip
         state: present
       tags: install_deps
-    - name: Set up Docker's official GPG key and repository
+    # --------------------------------------------------------------------------
+    # ეტაპი 3ა: GPG გასაღების იმპორტი (Shell-ით)
+    # --------------------------------------------------------------------------
+    - name: Import Docker GPG key
       ansible.builtin.shell: |
         install -m 0755 -d /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        chmod a+r /etc/apt/keyrings/docker.gpg
-        echo \
-          "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-          {{ ansible_distribution_release }} stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      tags: install_docker   
+      tags: install_docker
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 3ბ: Docker-ის რეპოზიტორიის დამატება (apt_repository მოდულით)
+    # --------------------------------------------------------------------------
+    - name: Add Docker repository using apt_repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        update_cache: yes # ეს ავტომატურად გაასუფთავებს კონფლიქტებს
+      tags: install_docker
     # --------------------------------------------------------------------------
     # ამოცანა 4: იძულებითი APT განახლება (კონფლიქტის მოსაგვარებლად)
     # --------------------------------------------------------------------------
