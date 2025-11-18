@@ -1,67 +1,100 @@
 ---
 - name: Setup Docker and launch Nginx container
-  hosts: localhost
+  hosts: web_servers
+  become: yes
   gather_facts: yes
-  # ინსტალაციისთვის გვჭირდება root პრივილეგიები
+
+  # ეს pre_task უზრუნველყოფს, რომ Runner-ზე იყოს საჭირო Docker Python მოდული
+  pre_tasks:
+    - name: Ensure 'community.docker' collection is installed (Runner dependency)
+      ansible.builtin.ansible_galaxy:
+        type: collection
+        name: community.docker
+        state: present
+      run_once: true
 
   tasks:
-    - name: Ensure Docker dependencies are installed (yum-utils, device-mapper-persistent-data, lvm2)
-      ansible.builtin.dnf:
-        name: "{{ item }}"
+    # --------------------------------------------------------------------------
+    # ეტაპი 1: Ubuntu-ს წინაპირობების ინსტალაცია
+    # --------------------------------------------------------------------------
+    - name: Update apt cache and install dependencies
+      ansible.builtin.apt:
+        name: 
+          - curl
+          - gnupg
+          - lsb-release
+          - ca-certificates
+          - python3-pip # DNF-ის ნაცვლად ვიყენებთ APT-ს PIP-ისთვის
         state: present
-      loop:
-        - yum-utils
-        - device-mapper-persistent-data
-        - lvm2
-      become: yes
-
-    - name: Add Docker GPG key
-      ansible.builtin.rpm_key:
-        state: present
-        key: https://download.docker.com/linux/centos/gpg
-        
-    - name: Add Docker repository (for Rocky/CentOS)
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docker-ce.repo
-        mode: '0644'
-
-    - name: Install Python pip
-      ansible.builtin.dnf:
-        name: python3-pip
-        state: present
-      become: yes    
-
+        update_cache: yes
+      tags: install_deps
+      
+    # --------------------------------------------------------------------------
+    # ეტაპი 2: Python Docker SDK-ის ინსტალაცია (Droplet-ზე)
+    # --------------------------------------------------------------------------
     - name: Install Python Docker SDK (required for docker_container module)
       ansible.builtin.pip:
         name: docker
         state: present
-      become: yes 
-        
-    - name: Install Docker Engine
-      ansible.builtin.dnf:
-        name: docker-ce
+      tags: install_deps
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 3: Docker-ის ოფიციალური GPG გასაღების დამატება (თანამედროვე მეთოდი)
+    # --------------------------------------------------------------------------
+    - name: Download Docker GPG key and register as a keyring
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+        force: yes
+      tags: install_docker
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 4: Docker-ის სტაბილური რეპოზიტორიის დამატება
+    # --------------------------------------------------------------------------
+    - name: Add Docker stable repository
+      ansible.builtin.apt_repository:
+        # NOTE: signed-by იყენებს /etc/apt/keyrings/docker.asc (ახალი ფაილი)
+        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
-      become: yes 
-        
+        update_cache: yes
+      tags: install_docker
+
+    # --------------------------------------------------------------------------
+    # ეტაპი 5: Docker-ის ინსტალაცია
+    # --------------------------------------------------------------------------
+    - name: Install Docker Engine
+      ansible.builtin.package:
+        name: 
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io # ასოების სწორი თანმიმდევრობა
+        state: present
+      tags: install_docker
+    
+    # --------------------------------------------------------------------------
+    # ეტაპი 6: Docker სერვისის გაშვება და მომხმარებლის დამატება
+    # --------------------------------------------------------------------------
     - name: Start Docker service
       ansible.builtin.service:
         name: docker
         state: started
         enabled: yes
-   
-    - name: Add current user to 'docker' group
-      ansible.builtin.user:
-        name: "{{ lookup('env', 'USER') }}" # თქვენი Shell-ის მომხმარებლის სახელი
-        groups: docker
-        append: yes  
+      tags: deploy
+      
+    # NOTE: ჩვენ ვუშვებთ Ansible-ს root-ით (-u root), ამიტომ ჯგუფში დამატება არ გვჭირდება,
+    # მაგრამ თუ გვინდა ჩვეულებრივი მომხმარებლისთვის, საჭიროა. ამ ეტაპზე გამოვტოვოთ
+    # გამარტივების მიზნით, რადგან root-ი ყველაფერს აკეთებს.
 
-
+    # --------------------------------------------------------------------------
+    # ეტაპი 7: Docker Container-ის გაშვება
+    # --------------------------------------------------------------------------
     - name: Launch Nginx container on port 8080
       community.docker.docker_container:
         name: my_nginx_web
         image: nginx:latest
         state: started
         ports:
-          - "8080:80" # ჰოსტის პორტი 8080 უკავშირდება კონტეინერის პორტს 80
+          - "80:80" # შევცვალოთ 8080-ით 80-ზე, რათა გამოვიყენოთ სტანდარტული HTTP პორტი
         restart_policy: always
+      tags: deploy
