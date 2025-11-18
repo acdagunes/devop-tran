@@ -61,7 +61,7 @@
         path: /etc/apt/keyrings/docker.asc
         state: absent
       tags: install_docker
-   - name: Install Docker Engine and Python SDK (Final attempt with cache update)
+    - name: Install Docker Engine and Python SDK (Final attempt with cache update)
       ansible.builtin.apt:
         name:
           - docker-ce
