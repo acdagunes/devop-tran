@@ -21,6 +21,11 @@ jobs:
         run: pwd
       - name: List Files
         run: ls -R 
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.x # გამოიყენეთ კონკრეტული ვერსია
+
       # ----------------------------------------------------
       # ეტაპი 1: Docker (Build & Check - CI)
       # ----------------------------------------------------

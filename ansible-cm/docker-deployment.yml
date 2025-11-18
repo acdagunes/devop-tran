@@ -7,7 +7,7 @@
   # ეს pre_task უზრუნველყოფს, რომ Runner-ზე იყოს საჭირო Docker Python მოდული
   pre_tasks:
     - name: Ensure 'community.docker' collection is installed (Runner dependency)
-      ansible.builtin.ansible_galaxy:
+      ansible_galaxy:
         type: collection
         name: community.docker
         state: present
