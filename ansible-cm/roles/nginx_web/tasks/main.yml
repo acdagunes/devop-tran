@@ -1,0 +1,13 @@
+# -----------------------------------------------------------------------------
+# NGINX_WEB Role - CONTAINER DEPLOYMENT
+# -----------------------------------------------------------------------------
+
+- name: Launch Nginx container on port 8082
+  community.docker.docker_container:
+    name: my_nginx_web
+    image: nginx:latest
+    state: started
+    ports:
+      - "8082:80"
+    restart_policy: always
+  tags: deploy

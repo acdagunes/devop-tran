@@ -1,0 +1,58 @@
+# -----------------------------------------------------------------------------
+# DOCKER Role - DOCKER ENGINE AND SDK INSTALLATION
+# -----------------------------------------------------------------------------
+
+- name: Clean up old Docker repository files and keys
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/apt/sources.list.d/docker.list
+    - /etc/apt/keyrings/docker.asc
+    - /etc/apt/keyrings/docker.gpg
+    - /etc/apt/sources.list.d/docker.list.save
+    - /etc/apt/sources.list.d/docker.list.d
+  tags: cleanup
+
+- name: Force delete any remaining old docker sources.list entry
+  ansible.builtin.shell: find /etc/apt/sources.list.d/ -type f -name '*docker*' -delete
+  changed_when: true
+  tags: cleanup
+
+- name: Ensure APT cache is reset after cleanup
+  ansible.builtin.shell: apt clean && rm -rf /var/lib/apt/lists/*
+  changed_when: true
+  tags: cleanup
+
+- name: Install dependencies (curl, gnupg, python3-pip)
+  ansible.builtin.apt:
+    name:
+      - curl
+      - gnupg
+      - python3-pip # Needed for pip module later
+    state: present
+    update_cache: yes
+  tags: install_deps
+
+- name: Install Docker Engine using official get-docker.sh script
+  ansible.builtin.shell: |
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+  args:
+    creates: /usr/bin/docker # ეს უზრუნველყოფს, რომ ამოცანა მხოლოდ ერთხელ შესრულდეს
+  changed_when: true
+  tags: install_docker
+
+- name: Install Python Docker SDK using pip (Override PEP 668)
+  ansible.builtin.pip:
+    name: docker
+    state: present
+    extra_args: --break-system-packages # აუცილებელია Ubuntu 24.04-ზე
+  tags: install_deps
+
+- name: Start Docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+  tags: install_docker
