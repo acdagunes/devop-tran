@@ -1,33 +1,34 @@
-# Terraform-ის მოთხოვნები: საჭირო პროვაიდერების განსაზღვრა
+# main.tf (DigitalOcean-ის რესურსები)
+
+# 1. Terraform-ის მოთხოვნები (DigitalOcean Provider-ის დამატება)
 terraform {
   required_providers {
-    docker = {
-      source = "kreuzwerker/docker"
-      version = ">= 3.0.1" # ვიყენებთ სტაბილურ ვერსიას
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
     }
   }
 }
 
-# Docker Provider-ის კონფიგურაცია
-# Terraform ავტომატურად უკავშირდება Unix სოკეტს: unix:///var/run/docker.sock
-provider "docker" {}
+# 2. DigitalOcean Provider-ის კონფიგურაცია
+# პროვაიდერი ავტომატურად გამოიყენებს DIGITALOCEAN_TOKEN გარემო ცვლადს
+provider "digitalocean" {}
 
-# რესურსი 1: Docker Image (Nginx-ის იმიჯის მოზიდვა)
-resource "docker_image" "nginx_image" {
-  name = "nginx:latest"
-  keep_locally = true # იმიჯი დარჩება ლოკალურად
+# 3. SSH გასაღების მონაცემების მოზიდვა (თუ უკვე გაქვს ატვირთული DO-ზე)
+data "digitalocean_ssh_key" "my_ssh_key" {
+  # !!! ჩაანაცვლე "ssh-key-name" შენი DigitalOcean-ზე ატვირთული SSH გასაღების ზუსტი სახელით!
+  name = "Nikoloz_Local_Machine"
 }
 
-# რესურსი 2: Docker Container (Nginx-ის კონტეინერის გაშვება)
-resource "docker_container" "nginx_container" {
-  name  = "terraform_nginx_v7.0.0"
-  image = docker_image.nginx_image.name
+# 4. Droplet-ის შექმნა (IaC-ის მთავარი ნაწილი!)
+resource "digitalocean_droplet" "web_droplet" {
+  image  = "ubuntu-22-04-x64" # Ubuntu-ს სტაბილური ვერსია
+  name   = "ansible-compose-web-server"
+  region = "fra1" # მაგალითად, ფრანკფურტი (შეგიძლია შეცვალო)
+  size   = "s-1vcpu-1gb" # მინიმალური ზომა
   
-  # ჰოსტის პორტი 8081 გადამისამართებულია კონტეინერის პორტზე 80
-  ports {
-    internal = 80
-    external = 8082
-  }
-
-  restart = "always"
+  # SSH გასაღების მიბმა Droplet-ზე
+  ssh_keys = [
+    data.digitalocean_ssh_key.my_ssh_key.id
+  ]
 }

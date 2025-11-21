@@ -1,82 +1,51 @@
 ---
 # ansible-cm/roles/nginx_web/tasks/main.yml
-# -------------------------------------------------------------
-# FINAL NGINX DEPLOYMENT (SHELL + TEMPLATE - CLEAN VERSION)
-# -------------------------------------------------------------
-
-# 1. Check if my_nginx_web container exists (for idempotency)
-- name: 1. Check if my_nginx_web container exists
-  ansible.builtin.shell: docker inspect my_nginx_web
-  register: nginx_exists
-  ignore_errors: yes
-  changed_when: false
-  tags: deploy
-
-# 2. Deploy Nginx Configuration (Template) to temporary location on Droplet
-- name: 2. Deploy Nginx Configuration (Template) to temporary location
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: /tmp/nginx.conf
+# FINAL VERSION: Using Docker Compose for simplicity and scalability
+# 0. CLEANUP (must run before deployment attempts)
+- name: 0. Ensure OLD Nginx container is stopped and removed (due to port conflict)
+  community.docker.docker_container:
+    name: nginx_web
+    state: absent
+  ignore_errors: true # იგნორირება თუ კონტეინერი არ არსებობს (პირველი გაშვებისას)
+  tags: cleanup
+# 1. Ensure the required directories exist on the Droplet for volume mounting
+- name: 1. Ensure required directories exist for Compose volumes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
     owner: root
     group: root
-    mode: '0644'
+    mode: '0755'
+  loop:
+    # ეს არის Volumes-ის გარე (Droplet-ზე) ნაწილი
+    - /home/root/nginx/html
   tags: deploy
 
-# 3. Stop and Remove existing container IF it exists
-# ეს აუცილებელია კონფიგის სუფთად დასაინსტალირებლად, რადგან ვაკეთებთ `docker run`-ს
-- name: 3. Stop and Remove existing container
-  ansible.builtin.shell: docker rm -f my_nginx_web
-  when: nginx_exists.rc == 0
-  changed_when: true
-  ignore_errors: yes
-  tags: deploy
-
-# 4. Launch Nginx container with new config, copy config, and reload
-- name: 4. Launch Nginx container with new config
-  ansible.builtin.shell: |
-    # 1. კონტეინერის გაშვება (პორტი 8082, restart: always)
-    docker run -d \
-    --name my_nginx_web \
-    -p 8082:{{ nginx_port }} \
-    --restart always \
-    nginx:latest
-    
-    # 2. კონფიგის კოპირება დროპლეტიდან კონტეინერში
-    docker cp /tmp/nginx.conf my_nginx_web:/etc/nginx/nginx.conf
-    
-    # 3. Nginx-ის გადატვირთვა კონტეინერის შიგნით
-    docker exec my_nginx_web nginx -s reload
-#  changed_when: true # ვტოვებთ `changed: true`-ს, რადგან ყოველთვის ვშლით/ვქმნით კონტეინერს
-  tags: deploy
-# ... (TASK 4-ის შემდეგ)
-
-# 5. Deploy custom index.html to container root path
-- name: 5. Deploy index.html to Nginx root directory
+# 2. Deploy index.html template directly to the volume path
+- name: 2. Deploy index.html template directly to Compose volume path
   ansible.builtin.template:
     src: index.html.j2
-    dest: /tmp/index.html # დროებით Droplet-ზე შევქმნათ
+    dest: /home/root/nginx/html/index.html
     owner: root
     group: root
     mode: '0644'
   tags: deploy
 
-- name: 6. Copy index.html into the container
-  ansible.builtin.shell: |
-    docker cp /tmp/index.html my_nginx_web:/usr/share/nginx/html/index.html
-  changed_when: true
+# 3. Copy docker-compose.yml file to the Droplet
+- name: 3. Copy docker-compose.yml to Droplet
+  ansible.builtin.copy:
+    # ფაილი არის devops-lab/-ში, 4 დონე ზემოთ როლიდან
+    src: ../../../../docker-compose.yml
+    dest: /home/root/docker-compose.yml
+    owner: root
+    group: root
+    mode: '0644'
   tags: deploy
-# ... (Task 6-ის შემდეგ)
 
-# 7. Clean up temporary Nginx configuration file on Droplet
-- name: 7. Clean up temporary Nginx configuration file
-  ansible.builtin.file:
-    path: /tmp/nginx.conf
-    state: absent
-  tags: cleanup
-
-# 8. Clean up temporary index.html file on Droplet
-- name: 8. Clean up temporary index.html file
-  ansible.builtin.file:
-    path: /tmp/index.html
-    state: absent
-  tags: cleanup
+# 4. Launch the services using docker compose
+- name: 4. Launch Nginx container using Docker Compose CLI (V2)
+  ansible.builtin.command:
+    # Docker Compose V2 არის 'docker compose up -d' (სივრცით)
+    cmd: docker compose -f /home/root/docker-compose.yml up -d
+    chdir: /home/root/ # ბრძანება უნდა გაეშვას იქ, სადაც Compose ფაილია
+  tags: deploy

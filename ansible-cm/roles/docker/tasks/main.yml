@@ -43,12 +43,12 @@
   changed_when: true
   tags: install_docker
 
-- name: Install Python Docker SDK using pip (Override PEP 668)
-  ansible.builtin.pip:
-    name: docker
-    state: present
-    extra_args: --break-system-packages # აუცილებელია Ubuntu 24.04-ზე
-  tags: install_deps
+
+# ansible-cm/roles/docker/tasks/main.yml
+
+# ... (Install Python Docker SDK - ის შემდეგ)
+
+
 
 - name: Start Docker service
   ansible.builtin.service:

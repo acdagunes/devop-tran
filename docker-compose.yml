@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    image: nginx:latest
+    container_name: compose_nginx_web
+    restart: always
+    ports:
+      # გარე პორტი: შიდა პორტი (8082:80)
+      - "8082:80"
+    volumes:
+      # აკავშირებს Droplet-ის დირექტორიას კონტეინერის შიდა დირექტორიასთან
+      # /home/root/nginx/html-ს შექმნის Ansible (Task 1)
+      - /home/root/nginx/html:/usr/share/nginx/html
