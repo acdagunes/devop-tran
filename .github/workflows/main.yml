@@ -25,7 +25,7 @@ jobs:
           terraform_version: 1.6.x
 
       - name: 3. Terraform Init
-        run: terraform init
+        run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
         working-directory: terraform-iac
       #  env:
       #    DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
@@ -68,7 +68,7 @@ jobs:
 
       - name: 10. Terraform Destroy (Cleanup Infrastructure)
         if: always() # უზრუნველყოფს, რომ Destroy ყოველთვის გაეშვება, თუნდაც წინა ნაბიჯი ჩავარდეს
-        run: terraform destroy -auto-approve -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
+        run: terraform destroy -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
         working-directory: terraform-iac
        # env:
        #   DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
