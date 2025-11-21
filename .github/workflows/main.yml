@@ -71,9 +71,9 @@ jobs:
           ANSIBLE_CONNECT_TIMEOUT: 60     # ზრდის ლოდინის დროს Droplet-ის ჩართვამდე  
       # --- ეტაპი 3: Cleanup ---
   
-   #  - name: 10. Terraform Destroy (Cleanup Infrastructure)
-   #     if: always() # უზრუნველყოფს, რომ Destroy ყოველთვის გაეშვება, თუნდაც წინა ნაბიჯი ჩავარდეს
-   #     run: terraform destroy -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
-   #     working-directory: terraform-iac
+     - name: 10. Terraform Destroy (Cleanup Infrastructure)
+       if: always() # უზრუნველყოფს, რომ Destroy ყოველთვის გაეშვება, თუნდაც წინა ნაბიჯი ჩავარდეს
+       run: terraform destroy -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
+       working-directory: terraform-iac
        # env:
        #   DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
