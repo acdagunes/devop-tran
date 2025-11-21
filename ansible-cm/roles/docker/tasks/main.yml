@@ -1,6 +1,14 @@
 # -----------------------------------------------------------------------------
 # DOCKER Role - DOCKER ENGINE AND SDK INSTALLATION
 # -----------------------------------------------------------------------------
+# --- ახალი Task-ი ---
+- name: Wait for Cloud-Init / Free APT Lock
+  ansible.builtin.shell: |
+    while fuser /var/lib/dpkg/lock >/dev/null 2>&1 || fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do
+      sleep 5
+    done
+  args:
+    executable: /bin/bash
 
 - name: Clean up old Docker repository files and keys
   ansible.builtin.file:
