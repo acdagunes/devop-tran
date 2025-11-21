@@ -66,7 +66,9 @@ jobs:
 
       - name: 9. Run Ansible Playbook (Deployment)
         run: ansible-playbook ansible-cm/docker-deployment.yml -i ansible-cm/inventory.ini
-
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False # ეს აგვარებს Host Key Verification Failed-ს
+          ANSIBLE_CONNECT_TIMEOUT: 60     # ზრდის ლოდინის დროს Droplet-ის ჩართვამდე  
       # --- ეტაპი 3: Cleanup ---
 
       - name: 10. Terraform Destroy (Cleanup Infrastructure)
