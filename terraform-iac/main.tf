@@ -112,7 +112,6 @@ resource "kubernetes_deployment" "nginx_deployment" {
    
 }
 data "digitalocean_kubernetes_cluster" "k8s_cluster" {
-  name = digitalocean_kubernetes_cluster.k8s_cluster.name
-#   ეს უზრუნველყოფს, რომ data ბლოკი მხოლოდ cluster-ის შექმნის შემდეგ გაეშვება
-  depends_on = [digitalocean_kubernetes_cluster.k8s_cluster] 
+  name = digitalocean_kubernetes_cluster.k8s_cluster.name
+  depends_on = [digitalocean_kubernetes_cluster.k8s_cluster] 
 }
