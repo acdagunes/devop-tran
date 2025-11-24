@@ -1,3 +1,4 @@
+bash: line 1: c: command not found
 # main.tf (DigitalOcean-ის რესურსები)
 
 # terraform-iac/main.tf (განახლებული)
@@ -31,21 +32,15 @@ provider "digitalocean" {
 
 # 3. Kubernetes Provider-ის კონფიგურაცია
 provider "kubernetes" {
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    args = [
-      "doctl",
-      "kubernetes",
-      "cluster",
-      "kubeconfig",
-      "save",
-      digitalocean_kubernetes_cluster.k8s_cluster.id,
-      "--expiry-seconds",
-      "600"
-    ]
-    command = "doctl"
-  }
+  host                   = digitalocean_kubernetes_cluster.k8s_cluster.endpoint
+  # ეს data ბლოკი გვჭირდება kube_config-ის მისაღებად
+  token                  = data.digitalocean_kubernetes_cluster.k8s_cluster.kube_config[0].token 
+  cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.k8s_cluster.kube_config[0].cluster_ca_certificate)
 }
+
+
+
+
 
 
 # 4. Droplet-ის შექმნა (IaC-ის მთავარი ნაწილი!)
@@ -116,4 +111,10 @@ resource "kubernetes_deployment" "nginx_deployment" {
     }
   }
   depends_on = [digitalocean_kubernetes_cluster.k8s_cluster]
+  # ❗️ ამ data ბლოკს აუცილებლად დაამატებ main.tf-ის ბოლოს!
+data "digitalocean_kubernetes_cluster" "k8s_cluster" {
+  name = digitalocean_kubernetes_cluster.k8s_cluster.name
+  # ეს უზრუნველყოფს, რომ data ბლოკი მხოლოდ cluster-ის შექმნის შემდეგ გაეშვება
+  depends_on = [digitalocean_kubernetes_cluster.k8s_cluster] 
+}
 }
