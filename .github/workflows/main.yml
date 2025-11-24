@@ -24,7 +24,7 @@ jobs:
 
 # ... (სადღაც აქ იწყება steps:)
 
-      # --- ეტაპი 1: Terraform (Provisioning) ---
+      
       
       - name: 3. Terraform Init
         run: terraform init -backend=false
