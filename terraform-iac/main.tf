@@ -30,12 +30,19 @@ data "digitalocean_ssh_key" "my_ssh_key" {
 }
 
 # 4. Droplet-ის შექმნა (IaC-ის მთავარი ნაწილი!)
-resource "digitalocean_droplet" "web_droplet" {
-  image  = "ubuntu-22-04-x64" # Ubuntu-ს სტაბილური ვერსია
-  name   = "ansible-compose-web-server"
-  region = "fra1" # მაგალითად, ფრანკფურტი (შეგიძლია შეცვალო)
-  size   = "s-1vcpu-1gb" # მინიმალური ზომა
-  
+# terraform-iac/main.tf
+
+resource "digitalocean_kubernetes_cluster" "k8s_cluster" {
+  name    = "ansible-compose-k8s-cluster"
+  region  = "fra1"
+  version = "1.28" # ან შენი სასურველი ვერსია
+
+  node_pool {
+    name       = "worker-pool"
+    size       = "s-1vcpu-2gb" # 2GB RAM / 1 vCPU
+    node_count = 1
+  }
+}  
   # SSH გასაღების მიბმა Droplet-ზე
   ssh_keys = [
     data.digitalocean_ssh_key.my_ssh_key.id
