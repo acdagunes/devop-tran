@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
     }
+    aws = { 
+      source  = "hashicorp/aws"
+      version = "~> 5.0" 
+    }
   }
 }
 
@@ -27,7 +31,11 @@ variable "do_token" {
 provider "digitalocean" {
   token = var.do_token 
 }
-# terraform-iac/main.tf (დაამატე ეს ბლოკი)
+provider "aws" {
+  region     = var.region # იყენებს var.region-ს
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+}
 
 # 3. Kubernetes Provider-ის კონფიგურაცია
 provider "kubernetes" {
