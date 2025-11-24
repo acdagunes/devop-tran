@@ -45,9 +45,6 @@ jobs:
           DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
-
       - name: 9. Terraform Init for Destroy
         if: always()
         run: terraform init 
