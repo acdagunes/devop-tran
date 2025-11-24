@@ -20,11 +20,19 @@ jobs:
         with:
           terraform_version: 1.6.x
 
+      # .github/workflows/main.yml (განახლებული ნაბიჯი 2.1)
+
       - name: 2.1 Install DigitalOcean CLI (doctl) 
         run: |
-          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.107.0/doctl-amd64.deb -o doctl.deb
-          sudo apt install ./doctl.deb
-          doctl auth init --access-token ${{ secrets.DIGITALOCEAN_TOKEN }} # ავთენტიფიკაცია   
+          # 1. გადმოწერა (არქივის ნაცვლად პირდაპირი ბინარი)
+          curl -LO https://github.com/digitalocean/doctl/releases/download/v1.107.0/doctl-v1.107.0-linux-amd64.tar.gz
+          
+          # 2. ამოარქივება და გადატანა PATH-ში
+          tar xf doctl-v1.107.0-linux-amd64.tar.gz
+          sudo mv doctl /usr/local/bin
+          
+          # 3. ავთენტიფიკაცია
+          doctl auth init --access-token ${{ secrets.DIGITALOCEAN_TOKEN }}   
       - name: 3. Terraform Init
         run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
         working-directory: terraform-iac
@@ -34,7 +42,12 @@ jobs:
         run: terraform apply -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
         working-directory: terraform-iac
         
-      
+      - name: 9. Terraform Init for Destroy
+        if: always()
+        run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
+        working-directory: terraform-iac
+        
+            
       # --- ეტაპი 3: Cleanup ---
       
       - name: 10. Terraform Destroy (Cleanup Infrastructure)
