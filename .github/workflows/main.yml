@@ -20,6 +20,11 @@ jobs:
         with:
           terraform_version: 1.6.x
 
+      - name: 2.1 Install DigitalOcean CLI (doctl) 
+        run: |
+          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.107.0/doctl-amd64.deb -o doctl.deb
+          sudo apt install ./doctl.deb
+          doctl auth init --access-token ${{ secrets.DIGITALOCEAN_TOKEN }} # ავთენტიფიკაცია   
       - name: 3. Terraform Init
         run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
         working-directory: terraform-iac

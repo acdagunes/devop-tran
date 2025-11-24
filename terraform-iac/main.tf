@@ -31,11 +31,20 @@ provider "digitalocean" {
 
 # 3. Kubernetes Provider-ის კონფიგურაცია
 provider "kubernetes" {
-  # პარამეტრები მიიღება პირდაპირ DigitalOcean K8s კლასტერის რესურსის output-იდან
-  host                   = digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.host
-  client_certificate     = base64decode(digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.client_certificate)
-  client_key             = base64decode(digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.cluster_ca_certificate)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args = [
+      "doctl",
+      "kubernetes",
+      "cluster",
+      "kubeconfig",
+      "save",
+      digitalocean_kubernetes_cluster.k8s_cluster.id,
+      "--expiry-seconds",
+      "600"
+    ]
+    command = "doctl"
+  }
 }
 
 
