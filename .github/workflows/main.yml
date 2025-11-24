@@ -48,6 +48,20 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      # --- ახალი ნაბიჯი: IP-ის ამოღება და დაბეჭდვა ---
+      - name: 6. Get and Display EC2 Public IP
+        run: |
+          # ამოიღებს output-ის მნიშვნელობას JSON ფორმატით
+          IP_JSON=$(terraform output -json instance_public_ip)
+          
+          # IP მისამართის გასუფთავება (JSON ბრჭყალებისგან)
+          IP_ADDRESS=$(echo $IP_JSON | tr -d '"')
+          
+          echo "#####################################################################"
+          echo "## ✅ EC2 Instance Successfully Created! IP Address: $IP_ADDRESS"
+          echo "#####################################################################"
+        working-directory: terraform-iac # აუცილებელია!
 
       # --- ეტაპი 2: Init Destroy-სთვის (საჭიროა State File-ის მისაღებად) ---
       
