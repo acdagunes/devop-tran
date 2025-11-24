@@ -28,11 +28,13 @@ provider "digitalocean" {
 
 # 4. Droplet-ის შექმნა (IaC-ის მთავარი ნაწილი!)
 # terraform-iac/main.tf
-
+data "digitalocean_kubernetes_versions" "latest" {
+  version_prefix = "1." # მოძებნე ნებისმიერი 1.x ვერსია
+}
 resource "digitalocean_kubernetes_cluster" "k8s_cluster" {
   name    = "ansible-compose-k8s-cluster"
   region  = "fra1"
-  version = "1.30" # ან შენი სასურველი ვერსია
+  version = data.digitalocean_kubernetes_versions.latest.latest_version
 
   node_pool {
     name       = "worker-pool"
