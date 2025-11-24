@@ -1,4 +1,4 @@
-# .github/workflows/main.ymlaaaaa
+# .GitHub/workloads/main.ymlaaaaa
 # ...
 on:
   push:
@@ -20,31 +20,54 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.x
+      # .github/workflows/main.yml
 
-      # .github/workflows/main.yml (განახლებული ნაბიჯი 2.1)
+# ... (სადღაც აქ იწყება steps:)
 
-       
-          
-       # 3. ავთენტიფიკაცია
-             
-      - name: 3. Terraform Init
-        run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
-        working-directory: terraform-iac
-      
-      - name: 4. Terraform Apply (Create K8s Cluster) # ❗️ შეიცვალა Droplet-დან
-        id: apply
-        run: terraform apply -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
-        working-directory: terraform-iac
-        
+      # --- ეტაპი 1: Terraform (Provisioning) ---
+      
+      - name: 3. Terraform Init
+        run: terraform init -backend=false
+        working-directory: terraform-iac
+        env: 
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+
+      - name: 4. Terraform Plan
+        run: terraform plan -input=false
+        working-directory: terraform-iac
+        env: 
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: 5. Terraform Apply (Create K8s Cluster) 
+        id: apply
+        run: terraform apply -auto-approve
+        working-directory: terraform-iac
+        env: 
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
+
       - name: 9. Terraform Init for Destroy
         if: always()
-        run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
+        run: terraform init 
         working-directory: terraform-iac
-        
+        env:
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             
       # --- ეტაპი 3: Cleanup ---
       
       - name: 10. Terraform Destroy (Cleanup Infrastructure)
         if: always()
-        run: terraform destroy -auto-approve -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
-        working-directory: terraform-iac
+        run: terraform destroy 
+        env:
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
