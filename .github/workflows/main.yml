@@ -22,18 +22,14 @@ jobs:
 
       # .github/workflows/main.yml (განახლებული ნაბიჯი 2.1)
 
-      - name: 2.1 Install DigitalOcean CLI (doctl) 
+      - name: 2.1 Install DigitalOcean CLI  
         # ვიყენებთ მზა Action-ს ინსტალაციისთვის
-        uses: digitalocean/setup-doctl@v1 
+        uses: digitalocean/setup-doctl 
         with:
           # ეს Action თავად აყენებს PATH-ს და აკეთებს auth init-ს!
           token: ${{ secrets.DIGITALOCEAN_TOKEN }} 
           
-      - name: 3. Terraform Init
-        run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
-        working-directory: terrafor-iac
-          
-          # 3. ავთენტიფიკაცია
+       # 3. ავთენტიფიკაცია
              
       - name: 3. Terraform Init
         run: terraform init -backend=false -var="do_token=${{ secrets.DIGITALOCEAN_TOKEN }}"
